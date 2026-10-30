@@ -3,6 +3,12 @@ name: Release DBX plugin
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      release-tag:
+        description: Existing GitHub Release tag that receives the plugin assets
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -11,7 +17,7 @@ jobs:
   release:
     uses: t8y2/dbx/.github/workflows/plugin-release-reusable.yml@plugin-cli-v0.1.9
     with:
-      release-tag: ${{ github.event.release.tag_name }}
+      release-tag: ${{ github.event_name == 'workflow_dispatch' && inputs.release-tag || github.event.release.tag_name }}
       # ui/ 与 dist/ 不进 Git，CI 必须从源码构建 UI 再打包
       package-command: npm install -g pnpm@10.11.0 && pnpm install --frozen-lockfile && pnpm build && dbx-plugin package .
       package-path: dist/*.dbxp
